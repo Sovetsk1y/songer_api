@@ -22,3 +22,4 @@ doc/api/
 
 docker-compose.yaml
 .env
+*/migrations/

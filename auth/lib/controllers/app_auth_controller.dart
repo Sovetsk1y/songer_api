@@ -23,7 +23,12 @@ class AppAuthController extends ResourceController {
     final confirmationCode = '1111';
     try {
       final qFindUser = Query<User>(managedContext)
-        ..where((x) => x.phone).equalTo(user.phone);
+        ..where((x) => x.phone).equalTo(user.phone)
+        ..returningProperties((x) => [
+              x.id,
+              x.salt,
+              x.lastSignInRequestTime,
+            ]);
       final fetchedUser = await qFindUser.fetchOne();
 
       if (fetchedUser == null) {
@@ -44,12 +49,13 @@ class AppAuthController extends ResourceController {
         );
       } else {
         final difference =
-            fetchedUser.lastSignInRequestTime?.difference(DateTime.now()) ??
-                Duration.zero;
+            (fetchedUser.lastSignInRequestTime?.difference(DateTime.now()) ??
+                    Duration.zero)
+                .abs();
         if (difference.inSeconds < 120) {
           return AppResponse.badRequest(
               message:
-                  'You must wait ${difference.inSeconds} seconds to repeat that request');
+                  'You must wait ${120 - difference.inSeconds} seconds to repeat that request');
         }
         final hashConfirmationCode = generatePasswordHash(
           confirmationCode,

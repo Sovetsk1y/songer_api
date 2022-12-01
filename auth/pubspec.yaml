@@ -9,7 +9,11 @@ environment:
 dependencies:
   conduit: ^3.2.9
   jaguar_jwt: ^3.0.0
+  mime: ^1.0.3
 
 dev_dependencies:
   lints: ^2.0.0
   test: ^1.16.0
+
+assets:
+  - public/avatars/

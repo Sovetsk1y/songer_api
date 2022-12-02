@@ -12,6 +12,13 @@ class _User {
   @Column(unique: true, indexed: true)
   String? phone;
 
+  /// URL of loaded on server avatar
+  @Column(nullable: true)
+  String? avatar;
+
+  @Serialize(input: true, output: false)
+  int? avatarId;
+
   @Serialize(input: true, output: false)
   String? confirmationCode;
 

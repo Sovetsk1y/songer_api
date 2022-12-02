@@ -1,3 +1,4 @@
+import 'package:auth/models/image.dart';
 import 'package:auth/models/user.dart';
 import 'package:auth/utils/app_env.dart';
 import 'package:auth/utils/app_response.dart';
@@ -79,7 +80,9 @@ class AppAuthController extends ResourceController {
   }
 
   @Operation.put()
-  Future<Response> confirmIdentity(@Bind.body() User user) async {
+  Future<Response> confirmIdentity(
+    @Bind.body() User user,
+  ) async {
     if (user.phone?.isEmpty == true || user.confirmationCode?.isEmpty == true) {
       return AppResponse.badRequest(
           message: 'Field [phone] and [confirmationCode] are required');
@@ -127,10 +130,19 @@ class AppAuthController extends ResourceController {
             message:
                 '[name] must be greater than 2. Available characters: [a-z A-Z а-я А-Я]');
       }
+      String? avatarUrl;
+      if (user.avatarId != null) {
+        final image =
+            await managedContext.fetchObjectWithID<Image>(user.avatarId);
+        if (image != null) {
+          avatarUrl = image.url;
+        }
+      }
       await managedContext.transaction((transaction) async {
         final qUpdateUser = Query<User>(transaction)
           ..where((x) => x.id).equalTo(fetchedUser.id)
-          ..values.name = user.name;
+          ..values.name = user.name
+          ..values.avatar = avatarUrl;
         final uUser = await qUpdateUser.updateOne();
         await _updateTokens(uUser!.asMap()['id'], transaction);
       });

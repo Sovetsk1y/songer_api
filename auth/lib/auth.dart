@@ -25,7 +25,7 @@ class AppService extends ApplicationChannel {
     ..route('greetings').link(() => AppGreetingsController())
     ..route('images/[:name]')
         .link(() => AppTokenController())!
-        .link(() => AppMediaController())
+        .link(() => AppMediaController(managedContext))
     ..route('token/[:refresh]').link(() => AppAuthController(managedContext))
     ..route('user')
         .link(() => AppTokenController())!

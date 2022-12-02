@@ -1,13 +1,16 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:auth/models/image.dart';
 import 'package:auth/utils/app_response.dart';
 import 'package:auth/utils/app_utils.dart';
 import 'package:conduit/conduit.dart';
 import 'package:mime/mime.dart';
 
 class AppMediaController extends ResourceController {
-  AppMediaController() {
+  final ManagedContext managedContext;
+
+  AppMediaController(this.managedContext) {
     acceptedContentTypes.add(ContentType("multipart", "form-data"));
   }
 
@@ -59,9 +62,10 @@ class AppMediaController extends ResourceController {
         path += '/public/images/$fileName';
         final file = File(path);
         file.writeAsBytes(imageBytes);
-        final url =
-            '${request?.connectionInfo?.remoteAddress.address}:${request?.connectionInfo?.localPort}${request?.path.string}/$fileName';
+        final url = '${request?.path.string}/$fileName';
+        final image = await _loadImageToDb(url);
         return AppResponse.ok(body: {
+          'id': image.id,
           'url': url,
         }, message: 'Image successfully loaded');
       }
@@ -70,6 +74,12 @@ class AppMediaController extends ResourceController {
         'error': e.toString(),
       });
     }
+  }
+
+  Future<Image> _loadImageToDb(String url) async {
+    final qCreateImage = Query<Image>(managedContext)..values.url = url;
+    final image = await qCreateImage.insert();
+    return image;
   }
 
   Future<String> get _localPath async {
